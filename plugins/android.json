@@ -9,6 +9,12 @@
   "installed_plugins": {
     "cordova-plugin-whitelist": {
       "PACKAGE_NAME": "com.example.GeoLocation"
+    },
+    "cordova-plugin-nativegeocoder": {
+      "PACKAGE_NAME": "com.example.GeoLocation"
+    },
+    "cordova-plugin-geolocation": {
+      "PACKAGE_NAME": "com.example.GeoLocation"
     }
   },
   "dependent_plugins": {}
