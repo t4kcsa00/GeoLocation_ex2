@@ -45,6 +45,7 @@
           zoom: 8,
           center: {lat: -34.397, lng: 150.644}
         });
+        
         var geocoder = new google.maps.Geocoder();
         //submit button clicked call to geocodeAddress()
         document.getElementById('submit').addEventListener('click', function() {
@@ -56,9 +57,23 @@
         var address = document.getElementById('address').value;
         geocoder.geocode({'address': address}, function(results, status) {
           //if the address is found
-          if (status === 'OK') {
-           alert("Latitude:"+results[0].geometry.location.lat()+'\n'+
-                 "Longitude:"+results[0].geometry.location.lng());
+          if (status === 'OK') {      
+          //place the marker to place location
+          resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location              
+            });
+            //include detail about the latitude and longitude
+            var contentString = '<div id="content">'+'<h1>latitude:</h1><h2>'
+                                 +results[0].geometry.location.lat()+
+                                 '</h2><h1>Longitude:</h1><h2>'
+                                 +results[0].geometry.location.lng()+
+                                 '</h2></div>';
+            var infowindow = new google.maps.InfoWindow({
+            content: contentString
+          });
+          infowindow.open(map, marker);         
           } else {
             //if there occurs problem in finding the address
             alert('error due to ' + status);
