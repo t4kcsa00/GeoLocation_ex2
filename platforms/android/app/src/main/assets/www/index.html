@@ -75,47 +75,56 @@
       <div id="map">        
         </div>
     <div id="floating-panel">
-        <b>Start:</b>    
-        <input type="text" id="start">
-        <br>  
-        <b>Note:</b>  
-        <textarea id="descriptionStart" row="5"></textarea>
-        <br>
-        <b>End:</b>   
-        <input id="end" type="text"></input>
-        <br>
-        <b>Note:</b>  
-        <textarea id="descriptionEnd" row="5"></textarea>
-        <br>
-        
-          <input type="submit" id="submit">
+          <b>Start:</b>    
+          <input type="text" id="start">
+          <br>           
+          <b>End:</b>   
+          <input id="end" type="text"></input>
+          <br> 
+          <b>Note:</b>  
+          <textarea id="descriptionStart" row="5"></textarea>
+          <br>                 
+          <input type="submit" id="submit">         
+          <div id="showInformation"></div>
         <div id="directions-panel"></div>
         </div>
     </div>   
     <div id="right-panel"></div>
     
-    <script>
-    
+    <script>    
+     var db = window.openDatabase("db_map", "1.0", "db_map", 200000);
+     var element = document.getElementById("showInformation");
+
+     function successCB(latitude,longitude) {        
+        alert("saved data");       
+        db.transaction(function(tx){
+          tx.executeSql('SELECT * FROM Map where latitude="'+latitude+'" and longitude="'+longitude+'"', [], querySuccess, errorCB);}
+          , errorCB);
+     }    
+
+    function querySuccess(tx, results) {     
+        var collection = "";
+        // this will be true since it was a select statement and so rowsAffected was 0
+        if (!results.rowsAffected) {
+          for (var i=1; i<results.rows.length; i++){            
+            var detail = results.rows.item(i).detail;           
+            if (detail!=="undefined"){
+              collection +=detail+"<br/>"; 
+            }
+           
+          }   
+          element.innerHTML = collection;
+        }         
+       
+        }
+
     function errorCB(tx, err) {
         alert("Error processing SQL: "+err);
     }
-
-    // Transaction success callback
-    //
-    function successCB() {
-        alert("success!");
-    }
-
       function saveDescription(tx){
         var descriptionStart = document.getElementById('descriptionStart').value;
-        var start = document.getElementById('start').value;
-        var descriptionEnd = document.getElementById('descriptionEnd').value; 
-        var end = document.getElementById('end').value;            
-        var Lstartvalue = getLatitudeLongitude(start,descriptionStart); 
-                         
-        // tx.executeSql('INSERT INTO Map (description, coordinate) VALUES (descriptionStart,Lstartvalue)');
-        // var Lendvalue = getLatitudeLongitude(descriptionEnd); 
-        // tx.executeSql('INSERT INTO Map (description, coordinate) VALUES (descriptionEnd,Lendvalue)');      
+        var start = document.getElementById('start').value;                  
+        var Lstartvalue = getLatitudeLongitude(start,descriptionStart);                    
       }
 
       function getLatitudeLongitude(address,detail){
@@ -124,13 +133,11 @@
         geocoder.geocode( { 'address': address}, function(results, status) {         
           if (status == 'OK') {                      
             var userlatitude = (results[0].geometry.location.lat());
-            var userlongitude  = (results[0].geometry.location.lng()); 
-            var db = window.openDatabase("db_map", "1.0", "db_map", 200000);           
+            var userlongitude  = (results[0].geometry.location.lng());                       
             db.transaction(function(tx){             
               tx.executeSql('CREATE TABLE IF NOT EXISTS Map (detail, longitude ,latitude)');
-              tx.executeSql('INSERT INTO Map (detail, longitude,latitude) VALUES ("'+information+'", "'+userlongitude+'","'+userlatitude+'")');               
-              }, errorCB, successCB);
-            
+              tx.executeSql('INSERT INTO Map (detail, longitude,latitude) VALUES ("'+information+'", "'+userlongitude+'","'+userlatitude+'")');              
+              }, errorCB, successCB(userlatitude,userlongitude));                         
           } else {
             alert('Geocode was not successful for the following reason: ' + status);
           }
@@ -181,9 +188,7 @@
             window.alert('Directions request failed due to ' + status);
           }
         });
-      }
-
-      
+      }      
     
     </script>
     <script async defer
